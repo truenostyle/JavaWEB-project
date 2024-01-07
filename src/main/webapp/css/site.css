@@ -1,8 +1,26 @@
 .site-logo {
     font-size: 2em;
-    margin-right: 1em;
+    margin-left: 1em;
 }
 
-.auth-icon {
-    margin-right: .5em;
+.user-logo {
+    font-size: 1em;
+    margin-right: 1em;
+}
+/* Стили для HTML и BODY */
+html, body {
+    height: 100%; /* Определяем 100% высоты для всего сайта */
+    margin: 0; /* Убираем дефолтные отступы */
+    display: flex;
+    flex-direction: column; /* Задаем вертикальное направление основной оси */
+}
+
+/* Стили для основного контейнера */
+.main-content {
+    flex: 1 0 auto; /* Элемент будет растягиваться и сжиматься, но не сжиматься меньше своего содержимого */
+}
+
+/* Стили для FOOTER */
+footer {
+    flex-shrink: 0; /* Футер не будет сжиматься */
 }

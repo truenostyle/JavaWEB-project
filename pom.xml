@@ -16,7 +16,6 @@
             <version>2.10.1</version>
         </dependency>
 
-
         <!-- https://mvnrepository.com/artifact/com.mysql/mysql-connector-j -->
         <dependency>
             <groupId>com.mysql</groupId>

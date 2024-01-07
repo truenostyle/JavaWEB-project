@@ -39,12 +39,8 @@ public class CharsetFilter implements Filter {
         саме це "ім'я" користувача
          */
         HttpSession httpSession = req.getSession();
-        String user = (String) httpSession.getAttribute("user");
-        if (user == null) {
-            user = UUID.randomUUID().toString().substring(0, 4);
-            httpSession.setAttribute("user", user);
-        }
-        req.setAttribute("user", user);
+
+
         // передача роботи по ланцюгу
         filterChain.doFilter(servletRequest, servletResponse);
 

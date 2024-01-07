@@ -1,4 +1,6 @@
 <%@ page import="java.util.Date" %>
+<%@ page import="step.learning.User" %>
+
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%
     String pageBody = (String) request.getAttribute("page-body");
@@ -18,56 +20,70 @@
     <%--    <script src="<%=context%>/js/site.js"></script>--%>
 </head>
 <body>
+
+
+
+
 <nav>
-    <div class="nav-wrapper purple darken-4">
-        <!-- Modal Trigger -->
-        <a class="left modal-trigger auth-icon" href="#auth-modal"><i class="material-icons">exit_to_app</i></a>
+    <div class="nav-wrapper ocean darken-4">
 
-        <a href="<%= context %>/" class="left site-logo">Java Web201</a>
 
+        <a href="<%= context %>/" class="left site-logo">AIRBNB</a>
+        <%
+            System.out.println("Session ID: " + session.getId());
+            System.out.println("Session auth-status: " + session.getAttribute("auth-status"));
+            User user = null;
+            if(session.getAttribute("user") != null) {
+                user = (User) session.getAttribute("user");
+        %>
+        <div class="right" style="display: flex; align-items: center;">
+            <p style="margin-right: 10px;"> <%= user.getEmail() %> </p>
+            <a href="<%=context%>/admin-panel" class="btn waves-effect waves-light blue" style="margin-right: 10px;">Admin Panel</a>
+
+            <a href="<%=context%>/logout" class="btn waves-effect waves-light red">Logout</a>
+        </div>
+
+
+
+        <%
+        } else {
+        %>
         <ul id="nav-me" class="right hide-on-med-and-down">
-            <li <%="about.jsp".equals(pageBody) ? "class='active'" : ""%>
-            ><a href="<%=context%>/about">About</a></li>
-            <li <%="filters.jsp".equals(pageBody) ? "class='active'" : ""%>
-            ><a href="<%=context%>/filters">Filters</a></li>
-            <li <%="ioc.jsp".equals(pageBody) ? "class='active'" : ""%>
-            ><a href="<%=context%>/ioc">IoC</a></li>
-            <li <%="db.jsp".equals(pageBody) ? "class='active'" : ""%>
-            ><a href="<%=context%>/db">DB</a></li>
-            <li <%="spa.jsp".equals(pageBody) ? "class='active'" : ""%>
-            ><a href="<%=context%>/spa">SPA</a></li>
-            <li <%="ws.jsp".equals(pageBody) ? "class='active'" : ""%>
-            ><a href="<%=context%>/ws">WebSocket</a></li>
+            <li <%="signup.jsp".equals(pageBody) ? "class='active'" : ""%>>
+                <a href="<%=context%>/signup">Sign Up</a>
+            </li>
+            <li>
+                <a class="modal-trigger" href="#loginModal">Log In</a>
+            </li>
         </ul>
+        <%
+            }
+        %>
+
+
+
+
     </div>
 </nav>
 
 <%--<%=String.format("%s/%s", context, pageBody)%>--%>
-<div class="container">
+<div class="container main-content">
     <jsp:include page="<%= pageBody %>"/>
 </div>
 
 
-<footer class="page-footer purple darken-4">
+<footer class="page-footer footer ocean darken-4">
     <div class="container">
         <div class="row">
             <div class="col l6 s12">
-                <h5 class="white-text">Footer Content</h5>
+                <h5 class="white-text">AIRBNB</h5>
                 <p class="grey-text text-lighten-4">You can use rows and columns here to organize your footer
                     content.</p>
             </div>
-            <div class="col l4 offset-l2 s12">
-                <h5 class="white-text">Links</h5>
-                <ul>
-                    <li><a class="grey-text text-lighten-3" href="#!">Link 1</a></li>
-                    <li><a class="grey-text text-lighten-3" href="#!">Link 2</a></li>
-                    <li><a class="grey-text text-lighten-3" href="#!">Link 3</a></li>
-                    <li><a class="grey-text text-lighten-3" href="#!">Link 4</a></li>
-                </ul>
-            </div>
+
         </div>
     </div>
-    <div class="footer-copyright">
+    <div class="footer-copyright ">
         <div class="container">
             © <span id="currentYear">ff</span> Copyright Text
             <a class="grey-text text-lighten-4 right" href="#!">More Links</a>
@@ -77,38 +93,66 @@
 
 
 <!-- Modal Structure -->
-<div id="auth-modal" class="modal">
+<div id="loginModal" class="modal">
     <div class="modal-content">
-        <h4>Автентифікація на сайті</h4>
+        <h4>Войти</h4>
         <div class="row">
-            <div class="input-field col s6">
-                <i class="material-icons prefix">badge</i>
-                <input id="auth-login" type="text"
-                       class="validate">
-                <label for="auth-login">Логін на сайті</label>
-            </div>
-            <div class="input-field col s6">
-                <i class="material-icons prefix">lock</i>
-                <input id="auth-password" type="password" class="validate">
-                <label for="auth-password">Пароль</label>
+            <form action="auth" method="post" class="col s12" id="loginForm">
+                <div class="row">
+                    <div class="input-field col s12">
+                        <input id="email" type="email" name="email" class="validate" required>
+                        <label for="email">Email</label>
+                    </div>
+                    <div class="input-field col s12">
+                        <input id="password" type="password" name="password" class="validate" required>
+                        <label for="password">Password</label>
+                    </div>
+                </div>
+                <button class="btn waves-effect waves-light" type="submit" name="action">Entrance
+                    <i class="material-icons right">send</i>
+                </button>
+            </form>
+            <div id="loginError" style="color: red;">
+                <%
+                    if (session.getAttribute("auth-status") != null) { %>
+                    <p>Wrong password or email</p>
+                <% } else { %>
+                    <p></p>
+                <% }  %><!-- Используйте Expression Language для отображения сообщения об ошибке -->
             </div>
         </div>
     </div>
-    <div class="modal-footer">
-        <b id="auth-message"></b>
-        <a href="<%=context%>/signup" class="modal-close waves-effect deep-purple darken-4 btn-flat">Реєстрація</a>
-        <button id="auth-sign-in" class="waves-effect deep-purple darken-2 btn-flat">Вхід</button>
-    </div>
 </div>
 
+<%
+    String openModal = (String) session.getAttribute("openModal");
+    if("true".equals(openModal)) {
+        session.removeAttribute("openModal");
+%>
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        let instance = M.Modal.getInstance(document.querySelector('#loginModal'));
+        instance.open();
+    });
+</script>
+<%
+    }
+    else {
+        System.out.println("net");
+    }
+%>
 
+
+<!-- Compiled and minified CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
 <!-- Compiled and minified JavaScript -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-<script src="<%= context %>/js/site.js"></script>
-<script src="<%= context %>/js/spa.js?time=<%= new Date().getTime()%>"></script>
-<%--Спосіб антикешування, так робити не слід, якщо якісь ресурси не оновились, скоріш за все, це через кешовані дані--%>
-<%--ctrl+f5 для повного оновлення сторінки--%>
-<%--<!--Site JS-->--%>
-<%--<script src="<%= context %>/js/site.js?time=<%= new Date().getTime()%>"></script>--%>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let elems = document.querySelectorAll('.modal');
+        let instances = M.Modal.init(elems);
+    });
+</script>
+
 </body>
 </html>

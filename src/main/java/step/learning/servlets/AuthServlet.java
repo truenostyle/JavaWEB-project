@@ -1,84 +1,86 @@
 package step.learning.servlets;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import step.learning.dao.AuthTokenDao;
-import step.learning.dao.UserDao;
-import step.learning.dto.enitities.AuthToken;
+import step.learning.User;
+import step.learning.dao.DBConnection;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.Base64;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
+@WebServlet("/auth")
 @Singleton
 public class AuthServlet extends HttpServlet {
-    private final static Gson gson = new GsonBuilder().serializeNulls().create();
-    private final AuthTokenDao authTokenDao;
-    private final UserDao userDao;
-
-    @Inject
-    public AuthServlet(AuthTokenDao authTokenDao, UserDao userDao) {
-        this.authTokenDao = authTokenDao;
-        this.userDao = userDao;
-    }
-
     @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if (userDao.install()) {
-            sendResponse(resp, 201, "Created");
-        } else {
-            sendResponse(resp, 500, "Error, see server logs");
-        }
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String login = req.getParameter("login");
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String email = req.getParameter("email");
         String password = req.getParameter("password");
-        if (login == null || login.isEmpty()
-                || password == null /* || password.isEmpty()*/) {
-            resp.setStatus(400);
-            sendResponse(resp, 400,
-                    "Missing required parameters: login and/or password");
-            return;
+
+        User user = authenticate(email, password);
+        System.out.println(email + " | " + password);
+        System.out.println(user);
+        HttpSession session = req.getSession();
+        if (user != null) {
+            // Аутентификация успешна
+            session.setAttribute("user", user);
+            session.setAttribute("auth-status", "");
+            resp.sendRedirect(req.getContextPath() + "/");
+        } else {
+            // Аутентификация не удалась
+            session.setAttribute("auth-status", "Авторизация не удалась: неверный email или пароль");
+            session.setAttribute("openModal", "true");
+            resp.sendRedirect(req.getContextPath() + "/");
         }
-        AuthToken authToken = authTokenDao.getTokenByCredentials(login, password);
-        if (authToken == null) {
-            sendResponse(resp, 401, "Auth rejected for given login and/or password");
-            return;
-        }
-        String json = gson.toJson(authToken);
-        String base64code = Base64.getUrlEncoder().encodeToString(json.getBytes());
-        resp.setContentType("text/plain");
-        resp.getWriter().print(base64code);
     }
 
-    private void sendResponse(HttpServletResponse resp, int status, Object body) throws IOException {
-        resp.setContentType("application/json");
-        resp.setStatus(status);
-        resp.getWriter().print(gson.toJson(body));
+    private User authenticate(String email, String password) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            String sql = "SELECT * FROM Users WHERE email = ?";
+
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, email);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                String dbPassword = rs.getString("password");
+                String firstName = rs.getString("firstName");
+                String lastName = rs.getString("lastName");
+                int id = rs.getInt("id");
+
+                if (checkPassword(password, dbPassword)) {
+                    return new User(id, firstName, lastName, email, dbPassword);
+
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return null;
+    }
+
+    private boolean checkPassword(String password, String dbPassword) {
+
+        return password.equals(dbPassword);
     }
 }
-/*
-Авторизація та автентифікація.
-Автентифікація - перевірка логіну/паролю
-Авторизація - перевірка прав доступу
-
-Схеми:
-За сесіями - сервер зберігає ознаку авторизацію механізмом сесій,
-    перевіряє її вилученням даного параметру
-За токенами - без сесій, клієнт з кожним запитом передає токен,
-    який він отримує при авторизації.
-
-Робота з токенами.
-Токен (дослівно - жетон, посвідчення) - певні дані, щр ідентифікують
-користувача. Існують пропозиції стандартизації токенів, зокрема, JWT
-Для формування та перевірки токенів у БД як правило створюється окрема
-таблиця.
-
- */

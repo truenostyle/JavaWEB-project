@@ -11,14 +11,10 @@ public class RouterModule extends ServletModule {
         filter("/*").through(CharsetFilter.class);
 
         serve("/").with(HomeServlet.class);
-        serve("/about").with(JspServlet.class);
-        serve("/auth").with(AuthServlet.class);
-        serve("/db").with(DbServlet.class);
-        serve("/filters").with(FiltersServlet.class);
-        serve("/ioc").with(IocServlet.class);
         serve("/signup").with(SignupServlet.class);
-        serve("/spa").with(SpaServlet.class);
-        serve("/tpl/*").with(TemplateServlet.class);
-        serve("/ws").with(WsServlet.class);
+        serve("/successful-register").with(RegisterServlet.class);
+        serve("/successful-create").with(RegisterServlet.class);
+        serve("/admin-panel").with(AdminServlet.class);
+
     }
 }

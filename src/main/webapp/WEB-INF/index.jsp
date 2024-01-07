@@ -1,39 +1,51 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="step.learning.dao.DBConnection" %>
+<%@ page import="java.sql.*" %>
+<%@ page import="step.learning.User"%>
+<%@ page import="java.util.List" %>
+<%@ page import="step.learning.Appartament" %>
 
-<h1>Java web. Вступ</h1>
-<p>
-    Новий проєкт - архетип webapp.
-    Для запуску проєкту потрібен веб-сервер. Варіанти:
-    Tomcat (8), Glassfish (4-5), WildFly (22) та інші.
-    Ключовий момент - обираємо версію з підтримкою javax.
-    Будь-який з них завантажується архівом та просто розпаковується.
-</p>
-<% // Razor - @{ }
-    String str = "Hello";
-    str += " world";
-    int x = 10;
+<%  List<Appartament> appartaments = (List<Appartament>) request.getAttribute("appartaments");
+    System.out.println("apparts: " + appartaments);
+
 %>
-<p>
-    str = <%=str%>, x+5 = <%= x + 5%>
-</p>
-<ul>
-    <% for (int i = 0; i < 5; i++) {%>
-    <li>
-        Item No <%= i + 1%>
-    </li>
-    <% }%>
-</ul>
-<jsp:include page="fragment.jsp"/>
-<h2>Сервлети</h2>
-<p>
-    Сервлети - це класи Java, призначені для роботи з мережними задачами.
-    Для роботи з ними треба встановити Servlet API (за допомогою Maven).
-    Після створення класу сервлету його треба включити в маршрутизацію
-</p>
-<ul>
-    <li>За допомогою web.xml</li>
-    <li>За допомогою аннотацій</li>
-    <li>За допомогою IoC</li>
-</ul>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AIRBNB</title>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <% if(appartaments != null) {
+            for(Appartament appartament : appartaments) { %>
+        <div class="col s4">
+            <div class="card" style="height: 400px; position: relative;">
+                <div class="card-image" style="height: 200px; overflow: hidden;">
+                    <img src="<%=appartament.getImage()%>" style="width: 100%; object-fit: cover;">
+                </div>
+                <div class="card-content" style="overflow: hidden; height: 200px;">
+                    <span class="card-title" style="font-size: 1.2em;"><%=appartament.getName()%></span>
+                    <p style="font-size: 0.9em;"><%=appartament.getDescription()%></p>
+                    <p style="position: absolute; bottom: 10%"><%=appartament.getCity()%></p>
+                </div>
+                <div style="position: absolute; bottom: 0; left: 9%; width: 80%;">
+                    <div class="row" style="margin-bottom: 0;">
+                        <div class="col s6 left-align">
+                            <p><%=appartament.getPrice()%>$ night</p>
+                        </div>
+                        <div class="col s6 right-align">
+                            <p>Rating: <%=appartament.getRating()%></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <%  }
+        } else { %>
+        <p>No appartaments found.</p>
+        <% } %>
+    </div>
+</div>
 
-
+</body>
+</html>
